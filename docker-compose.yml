@@ -8,6 +8,7 @@ services:
       RECORD_TTL: 60
       ZONE: ddns.example.org
       SHARED_SECRET: changeme
+      TXT_TZ: Europe/Berlin
 #    volumes:
 #       - ./bind-data:/var/cache/bind
     ports:

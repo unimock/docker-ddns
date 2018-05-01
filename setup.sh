@@ -3,6 +3,7 @@
 [ -z "$SHARED_SECRET" ] && echo "SHARED_SECRET not set" && exit 1;
 [ -z "$ZONE" ] && echo "ZONE not set" && exit 1;
 [ -z "$RECORD_TTL" ] && echo "RECORD_TTL not set" && exit 1;
+[ -z "$TXT_TZ" ] && echo "TXT_TZ not set"
 
 
 if [ ! -e /etc/bind/named.conf ] ; then
@@ -58,7 +59,8 @@ then
     "Zone": "${ZONE}.",
     "Domain": "${ZONE}",
     "NsupdateBinary": "/usr/bin/nsupdate",
-	"RecordTTL": ${RECORD_TTL}
+    "RecordTTL": ${RECORD_TTL},
+    "TXTTimeZone": "${TXT_TZ}"
 }
 EOF
 fi

@@ -11,7 +11,7 @@ RUN cd /go/src/dyndns && go get && go test -v
 FROM alpine:3.7
 
 RUN apk update && apk upgrade && \
-apk add --no-cache bind bind-tools bash supervisor
+apk add --no-cache bind bind-tools bash supervisor tzdata
 
 COPY named.conf.options /etc/bind/named.conf.options
 COPY --from=builder /go/bin/dyndns /root/dyndns

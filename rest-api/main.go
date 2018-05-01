@@ -10,7 +10,7 @@ import (
     "os/exec"
     "bytes"
     "encoding/json"
-
+    "time"
     "github.com/gorilla/mux"
 )
 
@@ -35,7 +35,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
     }
 
     for _, domain := range response.Domains {
-        result := UpdateRecord(domain, response.Address, response.AddrType)
+        result := UpdateRecord(domain, response.Address, response.AddrType, response.Info)
 
         if result != "" {
             response.Success = false
@@ -52,8 +52,8 @@ func Update(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(response)
 }
 
-func UpdateRecord(domain string, ipaddr string, addrType string) string {
-    log.Println(fmt.Sprintf("%s record update request: %s -> %s", addrType, domain, ipaddr))
+func UpdateRecord(domain string, ipaddr string, addrType string, info string) string {
+    log.Println(fmt.Sprintf("%s record update request: %s -> %s (%s)", addrType, domain, ipaddr, info))
 
     f, err := ioutil.TempFile(os.TempDir(), "dyndns")
     if err != nil {
@@ -68,6 +68,14 @@ func UpdateRecord(domain string, ipaddr string, addrType string) string {
     w.WriteString(fmt.Sprintf("update delete %s.%s A\n", domain, appConfig.Domain))
     w.WriteString(fmt.Sprintf("update delete %s.%s AAAA\n", domain, appConfig.Domain))
     w.WriteString(fmt.Sprintf("update add %s.%s %v %s %s\n", domain, appConfig.Domain, appConfig.RecordTTL, addrType, ipaddr))
+    
+    if len(appConfig.TXTTimeZone) > 0  {
+      w.WriteString(fmt.Sprintf("update delete %s.%s TXT\n", domain, appConfig.Domain))
+      loc, _ := time.LoadLocation(appConfig.TXTTimeZone)
+      current_time := time.Now().In(loc)
+      w.WriteString(fmt.Sprintf("update add %s.%s %v TXT \"%s|%s\"\n", domain, appConfig.Domain, appConfig.RecordTTL,
+                              current_time.Format("2006-01-02|15:04:05"), info))
+    }
     w.WriteString("send\n")
 
     w.Flush()

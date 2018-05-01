@@ -21,8 +21,9 @@ unit_tests:
 	docker run -it --rm -v ${PWD}/rest-api:/go/src/dyndns -w /go/src/dyndns ${GIMG} bash -c "go get && go test -v"
 
 api_test:
-	curl "http://localhost:8080/update?secret=changeme&domain=foo&addr=1.2.3.4"
+	curl "http://localhost:8080/update?secret=changeme&domain=foo&addr=1.2.3.4&info=INFO_OK"
 	dig -p ${PORT} @localhost foo.example.org
+	dig -p ${PORT} @localhost foo.example.org TXT
 
 api_test_multiple_domains:
 	curl "http://localhost:8080/update?secret=changeme&domain=foo,bar,baz&addr=1.2.3.4"

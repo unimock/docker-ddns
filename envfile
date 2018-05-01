@@ -1,3 +1,4 @@
 SHARED_SECRET=changeme
 ZONE=example.org
 RECORD_TTL=3600
+TXT_TZ=Europe/Berlin

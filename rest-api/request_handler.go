@@ -16,6 +16,7 @@ type WebserviceResponse struct {
     Domains []string
     Address string
     AddrType string
+    Info string
 }
 
 func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config) WebserviceResponse {
@@ -27,6 +28,7 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config) Webs
     sharedSecret = vals.Get("secret")
     response.Domains = strings.Split(vals.Get("domain"), ",")
     response.Address = vals.Get("addr")
+    response.Info = vals.Get("info")
 
     if sharedSecret != appConfig.SharedSecret {
         log.Println(fmt.Sprintf("Invalid shared secret: %s", sharedSecret))
