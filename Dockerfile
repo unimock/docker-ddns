@@ -1,25 +1,30 @@
-FROM debian:stretch as builder
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-	apt-get install -q -y golang git-core && \
-	apt-get clean
+FROM golang:1.10-alpine3.7 as builder
 
-ENV GOPATH=/root/go
-RUN mkdir -p /root/go/src
-COPY rest-api /root/go/src/dyndns
-RUN cd /root/go/src/dyndns && go get && go test -v
+RUN apk update && apk upgrade && \
+apk add --no-cache git
 
-FROM debian:stretch
-MAINTAINER David Prandzioch <hello+ddns@davd.eu>
+RUN mkdir -p /go/src
+COPY rest-api /go/src/dyndns
+RUN cd /go/src/dyndns && go get && go test -v
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-	apt-get install -q -y bind9 dnsutils && \
-	apt-get clean
+############################################################
+FROM alpine:3.7
 
-RUN chmod 770 /var/cache/bind
+RUN apk update && apk upgrade && \
+apk add --no-cache bind bind-tools bash supervisor
+
+COPY named.conf.options /etc/bind/named.conf.options
+COPY --from=builder /go/bin/dyndns /root/dyndns
+RUN mkdir -p /var/cache/bind && chmod 770 /var/cache/bind
 COPY setup.sh /root/setup.sh
 RUN chmod +x /root/setup.sh
-COPY named.conf.options /etc/bind/named.conf.options
-COPY --from=builder /root/go/bin/dyndns /root/dyndns
 
 EXPOSE 53 8080
-CMD ["sh", "-c", "/root/setup.sh ; service bind9 start ; /root/dyndns"]
+#                                                  -g
+# supervisord
+COPY supervisord.conf /etc/supervisor/supervisord.conf
+RUN mkdir -p /var/log/supervisor/
+# startup script
+COPY start.sh /root/start.sh
+RUN chmod 755 /root/start.sh
+CMD ["/root/start.sh"]

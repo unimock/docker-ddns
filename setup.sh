@@ -4,6 +4,11 @@
 [ -z "$ZONE" ] && echo "ZONE not set" && exit 1;
 [ -z "$RECORD_TTL" ] && echo "RECORD_TTL not set" && exit 1;
 
+
+if [ ! -e /etc/bind/named.conf ] ; then
+    echo "include \"/etc/bind/named.conf.options\";" >> /etc/bind/named.conf
+fi
+
 if ! grep 'zone "'$ZONE'"' /etc/bind/named.conf > /dev/null
 then
 	echo "creating zone...";
@@ -38,8 +43,8 @@ EOF
 fi
 
 # If /var/cache/bind is a volume, permissions are probably not ok
-chown root:bind /var/cache/bind
-chown bind:bind /var/cache/bind/*
+chown root:root /var/cache/bind
+chown root:root /var/cache/bind/*
 chmod 770 /var/cache/bind
 chmod 644 /var/cache/bind/*
 
@@ -57,3 +62,4 @@ then
 }
 EOF
 fi
+exit 0

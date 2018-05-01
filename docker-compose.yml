@@ -1,17 +1,39 @@
 version: '3'
 services:
   ddns:
-    image: davd/docker-ddns:latest
-    #image: davd/docker-ddns:develop
+    image: unimock/docker-ddns:develop
     #build: .
-    restart: always
+    restart: unless-stopped
     environment:
       RECORD_TTL: 60
-      ZONE: example.org
+      ZONE: ddns.example.org
       SHARED_SECRET: changeme
+#    volumes:
+#       - ./bind-data:/var/cache/bind
     ports:
       - "53:53"
       - "53:53/udp"
       - "8080:8080"
-#    volumes:
-#       - ./bind-data:/var/cache/bind
+
+### traefik:  
+# 
+#    expose:
+#      - "8080"
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.frontend.rule=Host:ns.example.org"
+#      - "traefik.port=8080"
+#      - "traefik.docker.network=traefik_default"
+#    networks:
+#      - traefik_default
+#networks:
+#  traefik_default:
+#    external: true
+
+
+### help:
+#
+# curl "https://ns.example.org:443/update?secret=changeme&domain=foo&addr=1.2.3.44"
+# curl "https://ns.example.org:443/update?secret=changeme&domain=foo&addr=`dig +short myip.opendns.com @resolver1.opendns.com`"
+# dig @ns.example.org foo.ddns.example.org
+#
